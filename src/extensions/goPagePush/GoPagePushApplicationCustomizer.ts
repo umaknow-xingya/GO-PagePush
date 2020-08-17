@@ -4,7 +4,7 @@ import {
   BaseApplicationCustomizer
 } from '@microsoft/sp-application-base';
 import { Dialog } from '@microsoft/sp-dialog';
-import { AadHttpClient, HttpClientResponse } from '@microsoft/sp-http';
+import { AadHttpClient, HttpClientResponse } from '@microsoft/sp-http'; // added 
 
 import * as strings from 'GoPagePushApplicationCustomizerStrings';
 
