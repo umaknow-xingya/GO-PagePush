@@ -1,0 +1,18 @@
+{
+  "$schema": "https://developer.microsoft.com/json-schemas/spfx-build/config.2.0.schema.json",
+  "version": "2.0",
+  "bundles": {
+    "go-page-push-application-customizer": {
+      "components": [
+        {
+          "entrypoint": "./lib/extensions/goPagePush/GoPagePushApplicationCustomizer.js",
+          "manifest": "./src/extensions/goPagePush/GoPagePushApplicationCustomizer.manifest.json"
+        }
+      ]
+    }
+  },
+  "externals": {},
+  "localizedResources": {
+    "GoPagePushApplicationCustomizerStrings": "lib/extensions/goPagePush/loc/{locale}.js"
+  }
+}

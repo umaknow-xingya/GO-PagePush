@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Elements xmlns="http://schemas.microsoft.com/sharepoint/">
+    <CustomAction
+        Title="GoPagePush"
+        Location="ClientSideExtension.ApplicationCustomizer"
+        ClientSideComponentId="921110c1-a5e8-4969-aee5-f00f6813db35"
+        ClientSideComponentProperties="{&quot;testMessage&quot;:&quot;Test message&quot;}">
+    </CustomAction>
+</Elements>
