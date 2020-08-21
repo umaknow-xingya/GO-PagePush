@@ -29,7 +29,7 @@
     ]
   },
   "include": [
-    "src/**/*.ts"
+    "src/**/*.ts", "src/extensions/goPagePush/GoPagePushApplicationCustomizer.tsx"
   ],
   "exclude": [
     "node_modules",

@@ -8,8 +8,8 @@
     "skipFeatureDeployment": true,
     "webApiPermissionRequests": [
       {
-        "resource": "Test Xin à effacer",
-        "scope": "User.Read.All"
+        "resource": "JoelTest",
+        "scope": "User.Read"
       }
     ],
     "isDomainIsolated": false,
