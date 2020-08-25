@@ -15,14 +15,9 @@ import * as strings from "GoPagePushApplicationCustomizerStrings";
 import styles from "./AppCustomizer.module.scss";
 import { escape } from "@microsoft/sp-lodash-subset";
 
-import { AadHttpClient, HttpClientResponse } from "@microsoft/sp-http"; // added
+import { AadHttpClient, HttpClientResponse, IHttpClientOptions, HttpClient, AadTokenProvider} from "@microsoft/sp-http"; // added
 const LOG_SOURCE: string = "GoPagePushApplicationCustomizer";
 
-/**
- * If your command set uses the ClientSideComponentProperties JSON input,
- * it will be deserialized into the BaseExtension.properties object.
- * You can define an interface to describe it.
- */
 export interface IGoPagePushApplicationCustomizerProperties {
   testMessage: string;
   Top: string;
@@ -36,9 +31,20 @@ export default class GoPagePushApplicationCustomizer extends BaseApplicationCust
 > {
   private _topPlaceholder: PlaceholderContent | undefined;
   private _bottomPlaceholder: PlaceholderContent | undefined;
+  private _token; 
 
   @override
   public onInit(): Promise<void> {
+    var clientID = '44e56dc9-0513-4445-9895-52ca527f85a9'
+    // get the token and pass in the client id 
+    this.context.aadTokenProviderFactory.getTokenProvider().then((value: AadTokenProvider) => {
+      value.getToken(clientID).then(
+        token => { this._token = token }
+      ).catch(err => {
+        console.log("printing the error: ", err); 
+      })
+    });
+
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
     // Wait for the placeholders to be created (or handle them being changed) and then
     // render.
@@ -51,6 +57,22 @@ export default class GoPagePushApplicationCustomizer extends BaseApplicationCust
     this._addButton();
     return Promise.resolve();
   }
+
+  // the following method gets the bearer token 
+  // public async getBearerToken(): Promise<string>{
+  //   var clientID = '44e56dc9-0513-4445-9895-52ca527f85a9'; 
+  //   let token = await this.context.aadTokenProviderFactory
+  //     .getTokenProvider()
+  //     .then((tokenProvider: AadTokenProvider): Promise<string> => {
+  //       return tokenProvider.getToken(clientID); 
+  //     }).catch((err) => {
+  //       console.log(err);
+  //     }) 
+  //   return new Promise<any>( (resolve) => {
+  //     resolve(token); 
+  //   });
+  // }
+
   private _renderReactElement(
     component: ReactElement<any>,
     node: Element
@@ -146,24 +168,15 @@ export default class GoPagePushApplicationCustomizer extends BaseApplicationCust
   }
 
   private _connect(): void {
-    console.log("connect called");
-    this.context.aadHttpClientFactory
-    .getClient('https://jq-webapp1.azurewebsites.net')
-    .then((client: AadHttpClient): void => {
-      // connect to the API
-      // process data
+    console.log("connect is called");
+    let headers = new Headers();
+    console.log("bearer token (this._token) is: "+this._token);
+    headers.append("authorization", "Bearer "+this._token);
 
-    });
-    //this.context.httpClient.get('https://jq-webapp1.azurewebsites.net', 
-    // HttpClient.configurations.v1, {
-    //   credentials:"include"
-    // })
-    // .then((response: HttpClientResponse): Promise<string> => {
-    //   return response.json();
-    // })
-    // .then((greeting: string): void => {
-    //   this.domElement.querySelector(".greeting").innerHTML = greeting;
-    //})
+    this.context.httpClient.get('https://jq-webapp1.azurewebsites.net', HttpClient.configurations.v1, { headers: headers })
+      .then((response: HttpClientResponse): Promise<string> => {
+        return response.json();
+      });
   }
 
   public render() {

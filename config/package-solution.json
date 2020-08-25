@@ -8,8 +8,8 @@
     "skipFeatureDeployment": true,
     "webApiPermissionRequests": [
       {
-        "resource": "JoelTest",
-        "scope": "User.Read"
+        "resource": "JQ Test e2e Security",
+        "scope": "user_impersonation"
       }
     ],
     "isDomainIsolated": false,
