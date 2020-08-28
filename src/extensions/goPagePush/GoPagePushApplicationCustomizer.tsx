@@ -1,13 +1,10 @@
+// this extension has been deployed to https://umaknowdev.sharepoint.com/sites/e2e 
 import * as React from "react";
 import { ReactElement } from "react";
 import * as ReactDOM from "react-dom";
 import { override } from "@microsoft/decorators";
 import { Log } from "@microsoft/sp-core-library";
-import {
-  BaseApplicationCustomizer,
-  PlaceholderContent,
-  PlaceholderName,
-} from "@microsoft/sp-application-base";
+import { BaseApplicationCustomizer, PlaceholderContent, PlaceholderName } from "@microsoft/sp-application-base"; // used for the placeholder 
 import { Dialog } from "@microsoft/sp-dialog";
 import { Button } from "office-ui-fabric-react/lib/Button";
 
@@ -15,27 +12,22 @@ import * as strings from "GoPagePushApplicationCustomizerStrings";
 import styles from "./AppCustomizer.module.scss";
 import { escape } from "@microsoft/sp-lodash-subset";
 
-import { AadHttpClient, HttpClientResponse, IHttpClientOptions, HttpClient, AadTokenProvider} from "@microsoft/sp-http"; // added
+import { AadHttpClient, HttpClientResponse, IHttpClientOptions, HttpClient, AadTokenProvider} from "@microsoft/sp-http"; // used for the connection to API
 const LOG_SOURCE: string = "GoPagePushApplicationCustomizer";
 
 export interface IGoPagePushApplicationCustomizerProperties {
-  testMessage: string;
-  Top: string;
   Bottom: string;
-  //ButtonLabel: string;
 }
 
-/** A Custom Action which can be run during execution of a Client Side Application */
 export default class GoPagePushApplicationCustomizer extends BaseApplicationCustomizer<
   IGoPagePushApplicationCustomizerProperties
 > {
-  private _topPlaceholder: PlaceholderContent | undefined;
   private _bottomPlaceholder: PlaceholderContent | undefined;
-  private _token; 
+  private _token; // stores the bearer token
 
   @override
   public onInit(): Promise<void> {
-    var clientID = '44e56dc9-0513-4445-9895-52ca527f85a9'
+    var clientID = '44e56dc9-0513-4445-9895-52ca527f85a9' // hard-coded for now
     // get the token and pass in the client id 
     this.context.aadTokenProviderFactory.getTokenProvider().then((value: AadTokenProvider) => {
       value.getToken(clientID).then(
@@ -46,95 +38,42 @@ export default class GoPagePushApplicationCustomizer extends BaseApplicationCust
     });
 
     Log.info(LOG_SOURCE, `Initialized ${strings.Title}`);
-    // Wait for the placeholders to be created (or handle them being changed) and then
-    // render.
+    // wait for the placeholders to be created (or handle them being changed) and then render
     this.context.placeholderProvider.changedEvent.add(
       this,
       this._renderPlaceHolders
     );
-    // this.aadHttpClient = await this.context.aadHttpClientFactory
-    //   .getClient('https://jq-webapp1.azurewebsites.net');
+    // add the "connect to api" button to the buttom placeholder
     this._addButton();
     return Promise.resolve();
   }
 
-  // the following method gets the bearer token 
-  // public async getBearerToken(): Promise<string>{
-  //   var clientID = '44e56dc9-0513-4445-9895-52ca527f85a9'; 
-  //   let token = await this.context.aadTokenProviderFactory
-  //     .getTokenProvider()
-  //     .then((tokenProvider: AadTokenProvider): Promise<string> => {
-  //       return tokenProvider.getToken(clientID); 
-  //     }).catch((err) => {
-  //       console.log(err);
-  //     }) 
-  //   return new Promise<any>( (resolve) => {
-  //     resolve(token); 
-  //   });
-  // }
-
-  private _renderReactElement(
-    component: ReactElement<any>,
-    node: Element
-  ): void {
+  private _renderReactElement(component: ReactElement<any>, node: Element): void {
     ReactDOM.unmountComponentAtNode(node);
     ReactDOM.render(component, node);
   }
 
-  // for the api button
+  // for the "connect to api" button
   private _addButton() {
     const button: React.ReactElement<IGoPagePushApplicationCustomizerProperties> = (
       <div className="button">
       <React.Fragment>
-        <Button onClick={this._connect}> CLICK HERE TO CONNECT TO THE API</Button>
+        <Button onClick={this._connect.bind(this)}> CLICK HERE TO CONNECT TO THE API</Button>
       </React.Fragment>
       </div>
     );
     this._renderReactElement(button, this._bottomPlaceholder.domElement);
   }
 
-  // placeholder private method (added)
+  // placeholder
   private _renderPlaceHolders(): void {
-    // Handling the top placeholder
-    if (!this._topPlaceholder) {
-      this._topPlaceholder = this.context.placeholderProvider.tryCreateContent(
-        PlaceholderName.Top,
-        { onDispose: this._onDispose }
-      );
-
-      // The extension should not assume that the expected placeholder is available.
-      if (!this._topPlaceholder) {
-        console.error("The expected placeholder (Top) was not found.");
-        return;
-      }
-
-      if (this.properties) {
-        let topString: string = this.properties.Top;
-        if (!topString) {
-          topString = "(Top property was not defined.)";
-        }
-
-        if (this._topPlaceholder.domElement) {
-          this._topPlaceholder.domElement.innerHTML = `
-          <div class="${styles.app}">
-            <div class="${styles.top}">
-              <i class="ms-Icon ms-Icon--Info" aria-hidden="true"></i> ${escape(
-                topString
-              )}
-            </div>
-          </div>`;
-        }
-      }
-    }
-
-    // Handling the bottom placeholder
+    // handling the bottom placeholder
     if (!this._bottomPlaceholder) {
       this._bottomPlaceholder = this.context.placeholderProvider.tryCreateContent(
-        PlaceholderName.Bottom,
-        { onDispose: this._onDispose }
+        PlaceholderName.Bottom
       );
 
-      // The extension should not assume that the expected placeholder is available.
+      // the extension should not assume that the expected placeholder is available.
       if (!this._bottomPlaceholder) {
         console.error("The expected placeholder (Bottom) was not found.");
         return;
@@ -160,30 +99,20 @@ export default class GoPagePushApplicationCustomizer extends BaseApplicationCust
     }
   }
 
-  // added for the placeholder
-  private _onDispose(): void {
-    console.log(
-      "[GoPagePushApplicationCustomizer._onDispose] Disposed custom top and bottom placeholders."
-    );
-  }
-
   private _connect(): void {
-    console.log("connect is called");
     let headers = new Headers();
-    console.log("bearer token (this._token) is: "+this._token);
-    headers.append("authorization", "Bearer "+this._token);
+    headers.append("authorization", "Bearer " + this._token);
+    headers.append("accept", "application/json"); 
 
-    this.context.httpClient.get('https://jq-webapp1.azurewebsites.net', HttpClient.configurations.v1, { headers: headers })
+    this.context.httpClient.get('https://jq-webapp1.azurewebsites.net/api/Values', HttpClient.configurations.v1, { headers: headers })
       .then((response: HttpClientResponse): Promise<string> => {
+        // output the response from the connection  
+        alert("You have conncected to the API as: " + this.context.pageContext.user.email); 
+        alert("The url of this page is: " + this.context.pageContext.site.absoluteUrl);
         return response.json();
       });
   }
 
   public render() {
-    // <React.Fragment>
-    //   <div>
-    //     <Button>click me</Button>
-    //   </div>
-    // </React.Fragment>;
   }
 }
